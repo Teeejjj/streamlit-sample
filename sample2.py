@@ -40,14 +40,14 @@ def main():
             dataframe = pd.read_csv(upload_file)
         elif upload_file.name.endswith('.xlsx'):
             dataframe = pd.read_excel(upload_file)
-        st.dataframe(dataframe, use_container_width=True, height=200)  # Display the original data
+        st.dataframe(dataframe, use_container_width=True, height=300)  # Display the original data
 
     if st.button('Predict'):
         if dataframe is not None:
             try:
                 predicted_df = predict(dataframe)
                 st.success("Predicted Values")
-                st.dataframe(predicted_df, use_container_width=True, height=200)  # Display updated data
+                st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
                 dataframe = predicted_df
             except Exception as e:
                 st.error(f"Error: {e}")
@@ -59,14 +59,14 @@ def main():
 
     tab1.subheader("Rows with Missing Gender")
     if dataframe is not None:
-        tab1.dataframe(dataframe[dataframe['gender'].isnull()], use_container_width=True,height=200)
+        tab1.dataframe(dataframe[dataframe['gender'].isnull()], use_container_width=True,height=300)
 
     tab2.subheader("Rows with Predicted Gender")
     # Use the predicted_df if available, otherwise the original dataframe (if modified in-place)
     if predicted_df is not None:
-        tab2.dataframe(predicted_df[predicted_df['gender'].notnull()], use_container_width=True,height=200)
+        tab2.dataframe(predicted_df[predicted_df['gender'].notnull()], use_container_width=True,height=300)
     elif dataframe is not None:
-        tab2.dataframe(dataframe[dataframe['gender'].notnull()],use_container_width=True, height=200)
+        tab2.dataframe(dataframe[dataframe['gender'].notnull()],use_container_width=True, height=300)
 
 
 if __name__ =='__main__':
