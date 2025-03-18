@@ -3,7 +3,7 @@ import numpy as np
 import joblib
 import streamlit as st
 import warnings
-from io import StringIO
+import io
 warnings.filterwarnings('ignore')
 
 def predict(df, model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_93%.pkl'):
@@ -27,13 +27,14 @@ def predict(df, model_file='C://Users//User//Documents//work//Database//modeling
 
     return df
 
+
 def main():
     st.title("Gender Prediction")
     st.info("This app tries to predict a person's gender using machine learning")
     
     upload_file = st.file_uploader("Upload Excel File")
     dataframe = None
-    predicted_df = None  # Initialize variable for the predicted dataframe
+    predicted_df = None  
 
     if upload_file is not None:
         if upload_file.name.endswith('.csv'):
@@ -54,7 +55,6 @@ def main():
         else:
             st.error("Please upload a file first.")
 
-    # Tabs for displaying data subsets
     tab1, tab2 = st.tabs(['Null Gender', 'Predicted Gender'])
 
     tab1.subheader("Rows with Missing Gender")
@@ -62,12 +62,24 @@ def main():
         tab1.dataframe(dataframe[dataframe['gender'].isnull()], use_container_width=True,height=300)
 
     tab2.subheader("Rows with Predicted Gender")
-    # Use the predicted_df if available, otherwise the original dataframe (if modified in-place)
     if predicted_df is not None:
         tab2.dataframe(predicted_df[predicted_df['gender'].notnull()], use_container_width=True,height=300)
     elif dataframe is not None:
         tab2.dataframe(dataframe[dataframe['gender'].notnull()],use_container_width=True, height=300)
 
+    if predicted_df is not None:
+        with pd.ExcelWriter(buffer,engine='xlsxwriter') as writer:
+            predicted_df.to_excel(writer, sheet_name='Sheet1', index=False)
+        buffer.seek(0)
+
+        st.download_button(
+            label="Download Excel File",
+            data= buffer,
+            file_name = "pred_val.xlsx",
+            mime = "application/vnd.ms_excel"
+        )
+
 
 if __name__ =='__main__':
+    buffer = io.BytesIO()
     main()
