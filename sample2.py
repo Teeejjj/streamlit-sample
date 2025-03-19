@@ -27,6 +27,18 @@ def predict(df, model_file='C://Users//User//Documents//work//Database//modeling
 
     return df
 
+def saving_excel(buffer, df):
+        with pd.ExcelWriter(buffer,engine='xlsxwriter') as writer:
+            df.to_excel(writer, sheet_name='Sheet1', index=False)
+        buffer.seek(0)
+
+        st.download_button(
+            label="Download Excel File",
+            data= buffer,
+            file_name = "pred_val.xlsx",
+            mime = "application/vnd.ms_excel"
+        )
+
 
 def main():
     st.title("Gender Prediction")
@@ -48,8 +60,8 @@ def main():
             try:
                 predicted_df = predict(dataframe)
                 st.success("Predicted Values")
-                st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
-                dataframe = predicted_df
+                # st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
+                # dataframe = predicted_df
             except Exception as e:
                 st.error(f"Error: {e}")
         else:
@@ -68,16 +80,7 @@ def main():
         tab2.dataframe(dataframe[dataframe['gender'].notnull()],use_container_width=True, height=300)
 
     if predicted_df is not None:
-        with pd.ExcelWriter(buffer,engine='xlsxwriter') as writer:
-            predicted_df.to_excel(writer, sheet_name='Sheet1', index=False)
-        buffer.seek(0)
-
-        st.download_button(
-            label="Download Excel File",
-            data= buffer,
-            file_name = "pred_val.xlsx",
-            mime = "application/vnd.ms_excel"
-        )
+       saving_excel(buffer, predicted_df)
 
 
 if __name__ =='__main__':
