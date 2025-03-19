@@ -56,18 +56,19 @@ def main():
         elif upload_file.name.endswith('.xlsx'):
             dataframe = pd.read_excel(upload_file)
         st.dataframe(dataframe, use_container_width=True, height=300)  # Display the original data
-
-    if st.button('Predict'):
-        if dataframe is not None:
-            try:
-                predicted_df = predict(dataframe)
-                st.success("Predicted Values")
-                # st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
-                # dataframe = predicted_df
-            except Exception as e:
-                st.error(f"Error: {e}")
-        else:
-            st.error("Please upload a file first.")
+    
+    if upload_file is not None:
+        if st.button('Predict'):
+            if dataframe is not None:
+                try:
+                    predicted_df = predict(dataframe)
+                    st.success("Predicted Values")
+                    # st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
+                    # dataframe = predicted_df
+                except Exception as e:
+                    st.error(f"Error: {e}")
+            else:
+                st.error("Please upload a file first.")
 
     tab1, tab2 = st.tabs(['Null Gender', 'Predicted Gender'])
 
