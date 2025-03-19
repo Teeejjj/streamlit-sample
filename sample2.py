@@ -6,6 +6,7 @@ import warnings
 import io
 warnings.filterwarnings('ignore')
 
+@st.cache_resource
 def predict(df, model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_91%.pkl'):
     with open(model_file, 'rb') as file:
         loaded_model = joblib.load(file)
@@ -36,7 +37,8 @@ def saving_excel(buffer, df):
             label="Download Excel File",
             data= buffer,
             file_name = "pred_val.xlsx",
-            mime = "application/vnd.ms_excel"
+            mime = "application/vnd.ms_excel",
+            on_click='ignore'
         )
 
 
