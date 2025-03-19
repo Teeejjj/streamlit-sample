@@ -6,7 +6,7 @@ import warnings
 import io
 warnings.filterwarnings('ignore')
 
-def predict(df, model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_93%.pkl'):
+def predict(df, model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_91%.pkl'):
     with open(model_file, 'rb') as file:
         loaded_model = joblib.load(file)
 
