@@ -65,18 +65,7 @@ def main():
             dataframe = pd.read_csv(upload_file)
         elif upload_file.name.endswith('.xlsx'):
             dataframe = pd.read_excel(upload_file)
-        st.dataframe(dataframe, use_container_width=True, height=300)  # Display the original data
-    
-    with st.sidebar:
-        st.header('Gender Prediction Web App v.1')
-        if predicted_df is not None:
-            st.subheader('Updated Values')
-            gender_counts = predicted_df['gender'].value_counts().reindex(['M','F'], fill_value=0)
-            st.bar_chart(gender_counts)
-        elif dataframe is not None:
-            st.subheader('Original Data')
-            gender_counts = dataframe['gender'].value_counts().reindex(['M','F'], fill_value=0)
-            st.bar_chart(gender_counts)
+        st.dataframe(dataframe, use_container_width=True, height=300)  # Display the original data       
 
     if upload_file is not None:
         if st.button('Predict'):
