@@ -1,5 +1,8 @@
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
+import seaborn as sns
+
 import joblib
 import streamlit as st
 import warnings
@@ -18,8 +21,15 @@ def predict(df, model_file='C://Users//User//Documents//work//Database//modeling
         df['gender'] = np.nan
     null_gender_rows = df['gender'].isnull()
 
+    if 'Name' in df.columns:
+        name = 'Name'
+    elif 'FirstName' in df.columns:
+        name = 'FirstName'
+    else:
+        st.exception(RuntimeError("No Name Column Existing"))
+
     if null_gender_rows.any():
-        x_new_transformed = cv2.transform(df.loc[null_gender_rows, 'Name'].fillna(''))
+        x_new_transformed = cv2.transform(df.loc[null_gender_rows, str(name)].fillna(''))
         y_pred = model.predict(x_new_transformed)
         gender_map = {'F': 0, 'M': 1}
         inv_gender_map = {v: k for k, v in gender_map.items()}
@@ -57,6 +67,17 @@ def main():
             dataframe = pd.read_excel(upload_file)
         st.dataframe(dataframe, use_container_width=True, height=300)  # Display the original data
     
+    with st.sidebar:
+        st.header('Gender Prediction Web App v.1')
+        if predicted_df is not None:
+            st.subheader('Updated Values')
+            gender_counts = predicted_df['gender'].value_counts().reindex(['M','F'], fill_value=0)
+            st.bar_chart(gender_counts)
+        elif dataframe is not None:
+            st.subheader('Original Data')
+            gender_counts = dataframe['gender'].value_counts().reindex(['M','F'], fill_value=0)
+            st.bar_chart(gender_counts)
+
     if upload_file is not None:
         if st.button('Predict'):
             if dataframe is not None:
