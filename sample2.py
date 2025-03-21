@@ -1,7 +1,5 @@
 import pandas as pd
 import numpy as np
-import matplotlib.pyplot as plt
-import seaborn as sns
 
 import joblib
 import streamlit as st
@@ -52,8 +50,16 @@ def saving_excel(buffer, df):
         )
 
 
+# st.dialog("Log in to Account!")
+# def log_in():
+#     st.)
+
 def main():
-    st.title("Gender Prediction")
+    # if "log in" not in st.session_state:
+    #     st.text_input('Log IN')
+    # else:
+
+    st.title("Gender Prediction 🧔‍♂️👩‍🦰")
     st.info("This app tries to predict a person's gender using machine learning")
     
     upload_file = st.file_uploader("Upload Excel File")
@@ -65,8 +71,9 @@ def main():
             dataframe = pd.read_csv(upload_file)
         elif upload_file.name.endswith('.xlsx'):
             dataframe = pd.read_excel(upload_file)
-        st.dataframe(dataframe, use_container_width=True, height=300)  # Display the original data       
-
+    with st.expander('Uploaded Data'):
+        st.dataframe(dataframe, use_container_width=True, height=300)
+        
     if upload_file is not None:
         if st.button('Predict'):
             if dataframe is not None:
@@ -79,6 +86,9 @@ def main():
                     st.error(f"Error: {e}")
             else:
                 st.error("Please upload a file first.")
+    with st.sidebar:
+        st.header('Gender Visualizations')
+        gender_cat = st.selectbox('Gender:', ('Male', 'Female'))
 
     tab1, tab2 = st.tabs(['Null Gender', 'Predicted Gender'])
 
