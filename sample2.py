@@ -88,7 +88,8 @@ def main():
                 st.error("Please upload a file first.")
     with st.sidebar:
         st.header('Gender Visualizations')
-        gender_cat = st.selectbox('Gender:', ('Male', 'Female'))
+        gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
+        
 
     tab1, tab2 = st.tabs(['Null Gender', 'Predicted Gender'])
 
