@@ -53,11 +53,29 @@ def saving_excel(buffer, df):
 # st.dialog("Log in to Account!")
 # def log_in():
 #     st.)
-
+def creds_entered():
+    if st.session_state["user"].strip() == "admin" and st.session_state['passwd'].strip() == 'admin':
+        st.session_state['authenticated'] = True
+    else:
+        st.session_state['authenticated'] = False
+        st.error('Invalid Username/Password . . . ')
+    
+def authenticate_user():
+    if "authenticated" not in st.session_state:
+        st.text_input(label="Username: ", value="", key="user", on_change=creds_entered)
+        st.text_input(label="Password: ", value="", key="pswswd", type="password", on_change=creds_entered)
+        return False
+    else:
+        if st.session_state['authenticated']:
+            return True
+        else:
+            st.text_input(label="Username: ", value="", key="user", on_change=creds_entered)
+            st.text_input(label="Password: ", value="", key="psswd", type="password", on_change=creds_entered)
+            return False
 def main():
-    # if "log in" not in st.session_state:
-    #     st.text_input('Log IN')
-    # else:
+    if not authenticate_user():
+        st.warning("Please log in to continue.")
+        return
 
     st.title("Gender Prediction 🧔‍♂️👩‍🦰")
     st.info("This app tries to predict a person's gender using machine learning")
