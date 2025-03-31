@@ -64,11 +64,11 @@ def authenticate_user():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if not st.session_state.authenticated:
-        st.header("Log In")
+        st.header("Enter your Account")
         username = st.text_input("Username:")
         password = st.text_input("Password:", type="password")
 
-        if st.button("Login"):
+        if st.button("Login 🙂‍↕️"):
             if not username:
                 st.warning("Please enter username")
             elif not password:
