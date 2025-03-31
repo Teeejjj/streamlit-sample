@@ -1,11 +1,16 @@
 import pandas as pd
 import numpy as np
-
+from database import DBConnect
+DBConnect = DBConnect()
 import joblib
 import streamlit as st
 import warnings
 import io
 warnings.filterwarnings('ignore')
+
+DBConnect.db_connect()
+DBConnect.cnx_79
+db_df = DBConnect.users_conn()
 
 @st.cache_resource
 def predict(df, model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_91%.pkl'):
@@ -53,17 +58,29 @@ def saving_excel(buffer, df):
 # st.dialog("Log in to Account!")
 # def log_in():
 #     st.)
+
 def creds_entered():
-    if st.session_state["user"].strip() == "admin" and st.session_state['passwd'].strip() == 'admin':
+    input_username = st.session_state["user"].strip()
+    input_pass = st.session_state['passwd'].strip()
+
+    db_username = db_df['username'].to_list()
+    db_pass = db_df['pass'].to_list()
+
+    if input_username in db_username and input_pass in db_pass:
         st.session_state['authenticated'] = True
     else:
         st.session_state['authenticated'] = False
-        st.error('Invalid Username/Password . . . ')
+        if not st.session_state['passwd']:
+            st.warning("Please Enter Password")
+        elif not st.session_state['user']:
+            st.warning("Please Enter Username")
+        else:
+            st.error('Invalid Username/Password . . . .')
     
 def authenticate_user():
     if "authenticated" not in st.session_state:
         st.text_input(label="Username: ", value="", key="user", on_change=creds_entered)
-        st.text_input(label="Password: ", value="", key="pswswd", type="password", on_change=creds_entered)
+        st.text_input(label="Password: ", value="", key="psswd", type="password", on_change=creds_entered)
         return False
     else:
         if st.session_state['authenticated']:

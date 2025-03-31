@@ -7,7 +7,7 @@ class DBConnect():
             'user':'postgres',
             'password':'qwerty12345*',
             'host':'localhost',
-            'port':'5432',
+            'port':'5433',
             'database':'postgres'
         }
 
@@ -43,3 +43,8 @@ class DBConnect():
         """
         self.db_dataframe = pd.read_sql(self.query, self.cnx_79)
         return self.db_dataframe
+    
+    def close_connection(self):
+        if self.cnx_79:
+            self.cnx_79.dispose()
+            print("Connection closed.")
