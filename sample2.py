@@ -59,32 +59,14 @@ def saving_excel(buffer, df):
 # def log_in():
 #     st.)
 
-# def creds_entered():
-#     input_username = st.session_state.get("user", "").strip()
-#     input_pass = st.session_state.get("passwd", "").strip()
-
-#     db_username = db_df["username"].to_list()
-#     db_pass = db_df["pass"].to_list()
-
-
-#     if input_username in db_username and input_pass in db_pass:
-#         st.session_state["authenticated"] = True
-#     else:
-#         st.session_state["authenticated"] = False
-#         if not input_pass:
-#             st.warning("Please Enter Password")
-#         elif not input_username:
-#             st.warning("Please Enter Username")
-#         else:
-#             st.error('Invalid Username/Password...')
-    
+   
 def authenticate_user():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if not st.session_state.authenticated:
         st.header("Log In")
         username = st.text_input("Username:")
-        password = st.text_input("Password:")
+        password = st.text_input("Password:", type="password")
 
         if st.button("Login"):
             if not username:
@@ -92,13 +74,15 @@ def authenticate_user():
             elif not password:
                 st.warning("Please enter password")
             else:
-                valid_user = db_df[(db_df["username"] == username) &\
-                                    (db_df["pass"] == password)].any()
+                valid_user = not db_df[
+                    (db_df["username"] == username) & 
+                    (db_df["pass"] == password)
+                ].empty
                 if valid_user:
                     st.session_state.authenticated = True
                     st.rerun()
                 else:
-                    st.error("Invalid Credentials")
+                    st.error("Invalid Username/Password")
         return False
     return True
     
