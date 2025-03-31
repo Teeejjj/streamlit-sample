@@ -9,7 +9,7 @@ import io
 warnings.filterwarnings('ignore')
 
 DBConnect.db_connect()
-DBConnect.cnx_79
+# DBConnect.cnx_79
 db_df = DBConnect.users_conn()
 
 @st.cache_resource
@@ -59,36 +59,49 @@ def saving_excel(buffer, df):
 # def log_in():
 #     st.)
 
-def creds_entered():
-    input_username = st.session_state["user"].strip()
-    input_pass = st.session_state['passwd'].strip()
+# def creds_entered():
+#     input_username = st.session_state.get("user", "").strip()
+#     input_pass = st.session_state.get("passwd", "").strip()
 
-    db_username = db_df['username'].to_list()
-    db_pass = db_df['pass'].to_list()
+#     db_username = db_df["username"].to_list()
+#     db_pass = db_df["pass"].to_list()
 
-    if input_username in db_username and input_pass in db_pass:
-        st.session_state['authenticated'] = True
-    else:
-        st.session_state['authenticated'] = False
-        if not st.session_state['passwd']:
-            st.warning("Please Enter Password")
-        elif not st.session_state['user']:
-            st.warning("Please Enter Username")
-        else:
-            st.error('Invalid Username/Password . . . .')
+
+#     if input_username in db_username and input_pass in db_pass:
+#         st.session_state["authenticated"] = True
+#     else:
+#         st.session_state["authenticated"] = False
+#         if not input_pass:
+#             st.warning("Please Enter Password")
+#         elif not input_username:
+#             st.warning("Please Enter Username")
+#         else:
+#             st.error('Invalid Username/Password...')
     
 def authenticate_user():
     if "authenticated" not in st.session_state:
-        st.text_input(label="Username: ", value="", key="user", on_change=creds_entered)
-        st.text_input(label="Password: ", value="", key="psswd", type="password", on_change=creds_entered)
+        st.session_state.authenticated = False
+    if not st.session_state.authenticated:
+        st.header("Log In")
+        username = st.text_input("Username:")
+        password = st.text_input("Password:")
+
+        if st.button("Login"):
+            if not username:
+                st.warning("Please enter username")
+            elif not password:
+                st.warning("Please enter password")
+            else:
+                valid_user = db_df[(db_df["username"] == username) &\
+                                    (db_df["pass"] == password)].any()
+                if valid_user:
+                    st.session_state.authenticated = True
+                    st.rerun()
+                else:
+                    st.error("Invalid Credentials")
         return False
-    else:
-        if st.session_state['authenticated']:
-            return True
-        else:
-            st.text_input(label="Username: ", value="", key="user", on_change=creds_entered)
-            st.text_input(label="Password: ", value="", key="psswd", type="password", on_change=creds_entered)
-            return False
+    return True
+    
 def main():
     if not authenticate_user():
         st.warning("Please log in to continue.")
@@ -124,7 +137,10 @@ def main():
     with st.sidebar:
         st.header('Gender Visualizations')
         gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
-        
+        if st.button('Log out 📤'):
+            # return to Log in / def authenticate_user
+            st.session_state['authenticated'] = False
+            st.rerun()
 
     tab1, tab2 = st.tabs(['Null Gender', 'Predicted Gender'])
 
