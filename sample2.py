@@ -59,7 +59,7 @@ def saving_excel(buffer, df):
 # def log_in():
 #     st.)
 
-   
+
 def authenticate_user():
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
@@ -88,23 +88,46 @@ def authenticate_user():
     
 def main():
     if not authenticate_user():
-        st.warning("Please log in to continue.")
+        # st.warning("Please log in to continue.")
         return
-
+    
     st.title("Gender Prediction 🧔‍♂️👩‍🦰")
     st.info("This app tries to predict a person's gender using machine learning")
     
     upload_file = st.file_uploader("Upload Excel File")
     dataframe = None
-    predicted_df = None  
+    predicted_df = None 
+    if "sample_data" not in st.session_state:
+        st.session_state.sample_data = False
 
-    if upload_file is not None:
-        if upload_file.name.endswith('.csv'):
-            dataframe = pd.read_csv(upload_file)
-        elif upload_file.name.endswith('.xlsx'):
-            dataframe = pd.read_excel(upload_file)
+    with st.sidebar:
+        st.header('Gender Visualizations')
+        gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
+        if st.button('Log out 📤'):
+            # return to Log in / def authenticate_user
+            st.session_state['authenticated'] = False
+            st.rerun()
+        if st.button("No Data? Try this one! 👍", use_container_width=True):
+            st.session_state.samp_df = pd.DataFrame({"Name":["Josh", "Kristian", "Shiela", "Mark", "Jenny", "Delro", "Chin"],
+                                    "gender": [None, None, None, None, None, None, None]})
+            st.session_state.sample_data = True
+            st.rerun()
+    if st.session_state.get('sample_data', False):
+        dataframe = st.session_state.sample_df
+        upload_file = None
+    else:
+        if upload_file:
+            if upload_file.name.endswith('.csv'):
+                dataframe = pd.read_csv(upload_file)
+            elif upload_file.name.endswith('.xlsx'):
+                dataframe = pd.read_excel(upload_file)
+
+    # ------ expander for uploaded data ------- #        
     with st.expander('Uploaded Data'):
-        st.dataframe(dataframe, use_container_width=True, height=300)
+        if dataframe is not None:
+            st.dataframe(dataframe, use_container_width=True, height=300)
+        else:
+            st.image("https://media.istockphoto.com/id/637743724/vector/dont-know-emoticon.jpg?s=1024x1024&w=is&k=20&c=7OfBxiNChgyDEEN7Dq_6wNB66LFNZO2E52djPvgSWHw=")
         
     if upload_file is not None:
         if st.button('Predict'):
@@ -118,13 +141,6 @@ def main():
                     st.error(f"Error: {e}")
             else:
                 st.error("Please upload a file first.")
-    with st.sidebar:
-        st.header('Gender Visualizations')
-        gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
-        if st.button('Log out 📤'):
-            # return to Log in / def authenticate_user
-            st.session_state['authenticated'] = False
-            st.rerun()
 
     tab1, tab2 = st.tabs(['Null Gender', 'Predicted Gender'])
 
@@ -139,7 +155,7 @@ def main():
         tab2.dataframe(dataframe[dataframe['gender'].notnull()],use_container_width=True, height=300)
 
     if predicted_df is not None:
-       saving_excel(buffer, predicted_df)
+        saving_excel(buffer, predicted_df)
 
 
 if __name__ =='__main__':
