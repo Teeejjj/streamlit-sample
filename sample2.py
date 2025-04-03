@@ -51,7 +51,23 @@ def saving_excel(buffer, df):
             mime = "application/vnd.ms_excel",
             on_click='ignore'
         )
+@st.dialog("Gender Prediction")
+def for_funsies(model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_91%.pkl'):
+    text = st.text_input("Enter a Name:", placeholder="Any Name")
+    with open(model_file, 'rb') as file:
+        loaded_model = joblib.load(file)
 
+    model = loaded_model['model']
+    cv2 = loaded_model['count_vectorizer']
+    if text:
+        try:
+            text_transform = cv2.transform([text])
+            pred_text = model.predict(text_transform)
+            gend_map = {0:'Female',1:'Male'}
+            pred_gend = gend_map.get(pred_text[0], None)
+            st.success(f"The predicted gender for {text} is {pred_gend}")
+        except Exception as e:
+            st.error(f"Prediction Error: {e}")
 
 def authenticate_user():
     def database_conn():
@@ -134,19 +150,19 @@ def main():
 
 # ---- Sidebar ---- #
     with st.sidebar:
+        with st.expander("Try the model out!", icon="👶"):
+            if st.button("➡️"):
+                for_funsies()
         st.header('Gender Visualizations')
         gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
         if st.session_state.current_df is not None and 'gender' in st.session_state.current_df.columns:
             df = st.session_state.current_df
             
-            # Create gender counts
             gender_counts = df['gender'].value_counts().reset_index()
             gender_counts.columns = ['Gender', 'Count']
             
-            # Create color mapping
             color_map = {'M': '#1f77b4', 'F': '#ff69b4'}  # Blue for Male, Pink for Female
             
-            # Filter based on selection
             if gender_cat == 'Male':
                 filtered_counts = gender_counts[gender_counts['Gender'] == 'M']
             elif gender_cat == 'Female':
@@ -154,7 +170,7 @@ def main():
             else:
                 filtered_counts = gender_counts
             
-            # Create interactive plot
+            ## Plotly Visualization ##
             fig = px.bar(
                 filtered_counts,
                 x='Gender',
@@ -175,7 +191,7 @@ def main():
             st.plotly_chart(fig, use_container_width=True)
         
         else:
-            st.info("👆 Upload data and run prediction to see visualizations")
+            st.info("👆 Upload data to see visualizations")
     
         if st.button('Log out 📤'):
             # return to Log in / def authenticate_user
@@ -209,6 +225,7 @@ def main():
                     st.success("Predicted Values")
                     # st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
                     # dataframe = predicted_df
+                    st.rerun()
                 except Exception as e:
                     st.error(f"Error: {e}")
             else:
