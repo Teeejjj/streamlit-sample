@@ -6,11 +6,9 @@ import joblib
 import streamlit as st
 import warnings
 import io
+import plotly.express as px
 warnings.filterwarnings('ignore')
 
-DBConnect.db_connect()
-# DBConnect.cnx_79
-db_df = DBConnect.users_conn()
 
 @st.cache_resource
 def predict(df, model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_91%.pkl'):
@@ -55,12 +53,14 @@ def saving_excel(buffer, df):
         )
 
 
-# st.dialog("Log in to Account!")
-# def log_in():
-#     st.)
-
-
 def authenticate_user():
+    def database_conn():
+        DBConnect.db_connect()
+        # DBConnect.cnx_79
+        db_df = DBConnect.users_conn()
+        return db_df
+    
+    db_df = database_conn()
     if "authenticated" not in st.session_state:
         st.session_state.authenticated = False
     if not st.session_state.authenticated:
@@ -85,42 +85,113 @@ def authenticate_user():
                     st.error("Invalid Username/Password")
         return False
     return True
-    
+
+#######################_____________MAIN WINDOW_____________#######################
 def main():
     if not authenticate_user():
         # st.warning("Please log in to continue.")
         return
     
+    #### -~-~ Creating our session states -~-~ ####
+    if 'current_df' not in st.session_state:
+        st.session_state.current_df = None
+    if 'data_source' not in st.session_state:
+        st.session_state.data_source = None
+    if 'last_uploaded' not in st.session_state:
+        st.session_state.last_uploaded = None
+
     st.title("Gender Prediction 🧔‍♂️👩‍🦰")
     st.info("This app tries to predict a person's gender using machine learning")
     
-    upload_file = st.file_uploader("Upload Excel File")
-    dataframe = None
-    predicted_df = None 
-    if "sample_data" not in st.session_state:
-        st.session_state.sample_data = False
+    upload_file = st.file_uploader("Upload Excel File", key='upload_file')
 
+    #### -~-~ Creating our session states -~-~ ####
+    if upload_file is None and st.session_state.get('data_source') == 'upload':
+        st.session_state.update({
+            'data_source': None,
+            'current_df': None,
+            'last_uploaded': None
+        })
+        st.rerun()
+
+    # ---- Getting our Data via Upload ---- #
+    if upload_file:
+        if upload_file != st.session_state.last_uploaded:
+            st.session_state.data_source = 'upload' # New file detected - reset state
+            st.session_state.last_uploaded = upload_file
+            
+            try:
+                if upload_file.name.endswith('.csv'):                               #     TRY
+                    st.session_state.current_df = pd.read_csv(upload_file)          #
+                elif upload_file.name.endswith('.xlsx'):                            #
+                    st.session_state.current_df = pd.read_excel(upload_file)        #               CONDITIONING :) BETTER ERROR HANDLING
+                else:                                                               #
+                    st.error("Unsupported file format")                             #
+                    st.session_state.current_df = None                              #
+            except Exception as e:                                                  #     CATCH
+                st.error(f"Error reading file: {str(e)}")                           #
+                st.session_state.current_df = None                                  #      this is one complicated blocks of comment
+
+# ---- Sidebar ---- #
     with st.sidebar:
         st.header('Gender Visualizations')
         gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
+        if st.session_state.current_df is not None and 'gender' in st.session_state.current_df.columns:
+            df = st.session_state.current_df
+            
+            # Create gender counts
+            gender_counts = df['gender'].value_counts().reset_index()
+            gender_counts.columns = ['Gender', 'Count']
+            
+            # Create color mapping
+            color_map = {'M': '#1f77b4', 'F': '#ff69b4'}  # Blue for Male, Pink for Female
+            
+            # Filter based on selection
+            if gender_cat == 'Male':
+                filtered_counts = gender_counts[gender_counts['Gender'] == 'M']
+            elif gender_cat == 'Female':
+                filtered_counts = gender_counts[gender_counts['Gender'] == 'F']
+            else:
+                filtered_counts = gender_counts
+            
+            # Create interactive plot
+            fig = px.bar(
+                filtered_counts,
+                x='Gender',
+                y='Count',
+                color='Gender',
+                color_discrete_map=color_map,
+                title=f"Gender Distribution - {gender_cat}",
+                text_auto=True
+            )
+            
+            fig.update_layout(
+                xaxis_title=None,
+                yaxis_title="Count",
+                showlegend=False,
+                hovermode="x unified"
+            )
+            
+            st.plotly_chart(fig, use_container_width=True)
+        
+        else:
+            st.info("👆 Upload data and run prediction to see visualizations")
+    
         if st.button('Log out 📤'):
             # return to Log in / def authenticate_user
-            st.session_state['authenticated'] = False
+            st.session_state.clear()
             st.rerun()
-        if st.button("No Data? Try this one! 👍", use_container_width=True):
-            st.session_state.samp_df = pd.DataFrame({"Name":["Josh", "Kristian", "Shiela", "Mark", "Jenny", "Delro", "Chin"],
+        if st.button("Try this sampled data! 👍", use_container_width=True):
+            st.session_state.data_source = 'sample'
+            st.session_state.current_df = pd.DataFrame({"Name":["Josh", "Kristian", "Shiela", "Mark", "Jenny", "Delro", "Chin"],
                                     "gender": [None, None, None, None, None, None, None]})
-            st.session_state.sample_data = True
+            
+            st.session_state.last_uploaded = None  # This will clear the upload history
             st.rerun()
-    if st.session_state.get('sample_data', False):
-        dataframe = st.session_state.sample_df
-        upload_file = None
-    else:
-        if upload_file:
-            if upload_file.name.endswith('.csv'):
-                dataframe = pd.read_csv(upload_file)
-            elif upload_file.name.endswith('.xlsx'):
-                dataframe = pd.read_excel(upload_file)
+
+    # ---- Dataframes ---- #
+    dataframe = st.session_state.get('current_df')
+    predicted_df = None
 
     # ------ expander for uploaded data ------- #        
     with st.expander('Uploaded Data'):
@@ -129,11 +200,12 @@ def main():
         else:
             st.image("https://media.istockphoto.com/id/637743724/vector/dont-know-emoticon.jpg?s=1024x1024&w=is&k=20&c=7OfBxiNChgyDEEN7Dq_6wNB66LFNZO2E52djPvgSWHw=")
         
-    if upload_file is not None:
+    if dataframe is not None:
         if st.button('Predict'):
             if dataframe is not None:
                 try:
-                    predicted_df = predict(dataframe)
+                    predicted_df = predict(dataframe.copy(deep=True))
+                    st.session_state.current_df = predicted_df
                     st.success("Predicted Values")
                     # st.dataframe(predicted_df, use_container_width=True, height=300)  # Display updated data
                     # dataframe = predicted_df
@@ -157,7 +229,9 @@ def main():
     if predicted_df is not None:
         saving_excel(buffer, predicted_df)
 
-
+#######################_____________INITIALIZE APP_____________#######################
 if __name__ =='__main__':
     buffer = io.BytesIO()
     main()
+
+# # # # # # --ALL COMMENTS ARE A REMINDER BECAUSE IM A FORGTFUL BITHC-- # # # # # #
