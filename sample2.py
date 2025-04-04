@@ -22,6 +22,15 @@ def predict(df, model_file='C://Users//User//Documents//work//Database//modeling
         df['gender'] = np.nan
     null_gender_rows = df['gender'].isnull()
 
+    # if 'gender' in df.columns:
+    #     gen_col = 'gender'
+    # elif 'Sex' in df.columns:
+    #     gen_col = 'Sex'
+    # else:
+    #     st.error("Gender/Sex Column does not exist!")
+    # st.session_state.gen_col = gen_col
+    # null_gender_rows = df[gen_col].isnull()
+
     if 'Name' in df.columns:
         name = 'Name'
     elif 'FirstName' in df.columns:
@@ -139,7 +148,7 @@ def main():
             try:
                 if upload_file.name.endswith('.csv'):                               #     TRY
                     st.session_state.current_df = pd.read_csv(upload_file)          #
-                elif upload_file.name.endswith('.xlsx'):                            #
+                elif upload_file.name.endswith(('.xlsx', '.xls')):                            #
                     st.session_state.current_df = pd.read_excel(upload_file)        #               CONDITIONING :) BETTER ERROR HANDLING
                 else:                                                               #
                     st.error("Unsupported file format")                             #
@@ -155,7 +164,7 @@ def main():
                 for_funsies()
         st.header('Gender Visualizations')
         gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
-        if st.session_state.current_df is not None and 'gender' in st.session_state.current_df.columns:
+        if st.session_state.current_df is not None in st.session_state.current_df.columns:
             df = st.session_state.current_df
             
             gender_counts = df['gender'].value_counts().reset_index()
