@@ -7,6 +7,7 @@ import streamlit as st
 import warnings
 import io
 import plotly.express as px
+import time
 warnings.filterwarnings('ignore')
 
 
@@ -60,6 +61,7 @@ def saving_excel(buffer, df):
             mime = "application/vnd.ms_excel",
             on_click='ignore'
         )
+
 @st.dialog("Gender Prediction")
 def for_funsies(model_file='C://Users//User//Documents//work//Database//modeling//model v.3//XGBoostModel_91%.pkl'):
     text = st.text_input("Enter a Name:", placeholder="Any Name")
@@ -70,13 +72,18 @@ def for_funsies(model_file='C://Users//User//Documents//work//Database//modeling
     cv2 = loaded_model['count_vectorizer']
     if text:
         try:
+            prog_bar = st.progress(0, text="Analyzing Name . . .")
+            for comp in range(100):
+                time.sleep(0.01)
+                prog_bar.progress(comp + 1, text= f"Predicting Name. . . {comp + 1}%")
             text_transform = cv2.transform([text])
             pred_text = model.predict(text_transform)
-            gend_map = {0:'Female',1:'Male'}
+            gend_map = {0:'Female', 1:'Male'}
             pred_gend = gend_map.get(pred_text[0], None)
-            st.success(f"The predicted gender for {text} is {pred_gend}")
+            prog_bar.empty()
+            st.markdown(f'The predicted gender for {text} is <code><b>{pred_gend}</b></code>', unsafe_allow_html=True)
         except Exception as e:
-            st.error(f"Prediction Error: {e}")
+            st.error(f"Predition Erro:{e}")
 
 def authenticate_user():
     def database_conn():
@@ -148,7 +155,7 @@ def main():
             try:
                 if upload_file.name.endswith('.csv'):                               #     TRY
                     st.session_state.current_df = pd.read_csv(upload_file)          #
-                elif upload_file.name.endswith(('.xlsx', '.xls')):                            #
+                elif upload_file.name.endswith(('.xlsx', '.xls')):                  #
                     st.session_state.current_df = pd.read_excel(upload_file)        #               CONDITIONING :) BETTER ERROR HANDLING
                 else:                                                               #
                     st.error("Unsupported file format")                             #
@@ -164,7 +171,7 @@ def main():
                 for_funsies()
         st.header('Gender Visualizations')
         gender_cat = st.selectbox('Gender Count:', ('Male', 'Female', 'All'))
-        if st.session_state.current_df is not None in st.session_state.current_df.columns:
+        if st.session_state.current_df is not None and 'gender' in st.session_state.current_df.columns:
             df = st.session_state.current_df
             
             gender_counts = df['gender'].value_counts().reset_index()
